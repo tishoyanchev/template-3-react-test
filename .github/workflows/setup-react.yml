@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14'
+
+    - name: Clean Up
+      run: |
+        rm -rf .env
+        rm -rf .github
+
+    - name: Create React App Directory
+      run: |
+        mkdir my-react-app
+        cd my-react-app
+        npx create-react-app .
+
+    - name: Install react-frontend-template
+      run: npm install react-frontend-template
+
+    - name: Invoke react-frontend-template
+      run: |
+        cd my-react-app
+        echo "Invoking react-frontend-template with template: ${{ secrets.TEMPLATE_NAME }}"
+        npx react-frontend-template -t '${{ secrets.TEMPLATE_NAME }}' || { echo "Template invocation failed"; exit 1; }
+      
+    - name: List files in my-react-app
+      run: |
+        ls -la my-react-app
+
+    - name: Commit and Push React App
+      run: |
+        cd my-react-app
+        git config --local user.email "you@example.com" # Replace with your email
+        git config --local user.name "Your Name" # Replace with your name
+        git add .
+        git commit -m "Add React app"
+        git push origin main
